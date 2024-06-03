@@ -1,77 +1,71 @@
-const Token = require('../modules/tokenAuth');
 const jwt = require('jsonwebtoken');
 const { customerModel } = require('../models/customer');
 
-let config;
+async function authenticateToken(req, res, next) {
+    const tokenAuth = req.headers['x-auth-token'];
+    const config = req.app.get('config');
 
-async function tokenAuthentication(req, res, next) {
-    const token_auth = req.headers['x-auth-token'];
-    config = req.app.get('config');
     try {
-        if (token_auth) {
-            const payload = jwt.verify(token_auth, config.jwt_secret);
-            if (payload.member_id) {
-                const member = await customerModel.findOne({ _id: payload.member_id });
-                if (member._id) {
-                    if (member.is_verified || ['/v1/member/verify-member'].includes(req.originalUrl)) {
+        if (tokenAuth) {
+            const payload = jwt.verify(tokenAuth, config.jwt_secret);
+            if (payload.userId) {
+                const member = await customerModel.findOne({ _id: payload.userId });
+
+                if (member && member._id) {
+                    if (member.is_verified || ['/customer/verify-member'].includes(req.originalUrl)) {
                         req.member = member;
-                        next();
+                        return next();
                     } else {
-                        const responseData = {
+                        return res.status(403).json({
                             meta: {
                                 code: 403,
                                 success: false,
                                 message: 'Member not verified',
                             },
-                        };
-                        res.status(responseData.meta.code).json(responseData);
+                        });
                     }
                 } else {
-                    const responseData = {
+                    return res.status(404).json({
                         meta: {
-                            code: 403,
+                            code: 404,
                             success: false,
-                            message: 'Access denied',
+                            message: 'Member not found',
                         },
-                        error: 'Invalid token',
-                    };
-                    res.status(responseData.meta.code).json(responseData);
+                    });
                 }
             } else {
-                const responseData = {
+                return res.status(401).json({
                     meta: {
-                        code: 403,
+                        code: 401,
                         success: false,
-                        message: 'Access denied',
+                        message: 'Invalid token payload',
                     },
-                    error: 'Invalid token',
-                };
-                res.status(responseData.meta.code).json(responseData);
+                });
             }
         } else {
-            const responseData = {
+            return res.status(401).json({
                 meta: {
-                    code: 403,
+                    code: 401,
                     success: false,
-                    message: 'Access denied',
+                    message: 'No token provided',
                 },
-                error: 'Invalid token',
-            };
-            res.status(responseData.meta.code).json(responseData);
+            });
         }
-    } catch (e) {
-        const responseData = {
+    } catch (error) {
+        console.error(error);
+        return res.status(403).json({
             meta: {
                 code: 403,
                 success: false,
-                message: 'Access denied',
+                message: 'Invalid token',
             },
-            error: 'Invalid token',
-        };
-        res.status(responseData.meta.code).json(responseData);
+        });
     }
 }
 
+
+
+
 module.exports = {
-    tokenAuthentication
+    authenticateToken
 };

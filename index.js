@@ -1,13 +1,22 @@
 const express = require("express")
 const cors = require("cors")
 const { connection } = require("./db")
-require("dotenv").config()
+require("dotenv").config();
+const customerRouters  = require('./customerDetails/customer.routes')
 
 const port = process.env.PORT
 const app = express()
 
 app.use(express.json())
 app.use(cors())
+app.use('/customer', customerRouters);
+
+app.set('config', {
+    jwt_secret: process.env.JWT_SECRET
+});
+
+
+
 
 app.get('/', (req, res) => {
     res.send({
