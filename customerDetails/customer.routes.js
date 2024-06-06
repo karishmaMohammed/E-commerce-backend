@@ -9,5 +9,6 @@ router.route('/login').post(customerCtrl.login);
 router.route('/verify-member').post(authenticateToken, customerCtrl.verifyMember);
 router.route('/create-details').post(authenticateToken,
     customerCtrl.customerDetails);
+router.route('/edit-details').post(authenticateToken, customerCtrl.editProfileDetails);    
 
 module.exports = router;    

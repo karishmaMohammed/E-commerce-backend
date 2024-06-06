@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const { customerModel } = require('../models/customer');
+const { notificationModel } = require('../models/notifications');
 
 async function authenticateToken(req, res, next) {
     const tokenAuth = req.headers['x-auth-token'];
@@ -64,8 +65,26 @@ async function authenticateToken(req, res, next) {
 }
 
 
-
+const createNotification = async (
+    member_id,
+    memberPhoto,
+    notification_title,
+    memberName,
+    notify_type
+) => {
+ const notifications =  await notificationModel.create({
+                notification_title,
+                member_id,
+                notify_type,
+                member_photo: memberPhoto,
+                member_name: memberName,
+                is_read: 0,
+            });
+      console.log(notifications, "dvfvfvd"); 
+   
+};
 
 module.exports = {
-    authenticateToken
+    authenticateToken,
+    createNotification
 };

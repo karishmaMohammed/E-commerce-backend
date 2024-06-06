@@ -47,7 +47,7 @@ async function register(req, res){
                 message: 'SUCCESS!',
             },
             data:{
-                user_details: userDetails.phoneNumber
+                user_details: userDetails._id
             }
         };
 
@@ -201,9 +201,58 @@ async function customerDetails(req, res){
     }
 }
 
+async function editProfileDetails(req, res){
+    let responseData;
+    try {
+        const { name,phone,email,gender, action} = req.body;
+        let getDetails;
+        if(action === 'update'){
+            const updatedDetails = await customerModel.findByIdAndUpdate(
+                req.member._id, 
+                {
+                  fullName: name,
+                  phoneNumber: phone,
+                  email,
+                  gender
+                },
+                { new: true } 
+            );
+        }else if(action === 'get_info'){
+             getDetails = await customerModel.findOne({_id: req.member._id},
+                {fullName:1, phoneNumber:1, email:1, gender:1});
+        }
+        
+        responseData = {
+            meta: {
+                code: 200,
+                success: true,
+                message: 'successfully.',
+            },
+            data:{
+                details: action === 'get_info' ? getDetails : ''
+            }
+        };
+
+        return res.status(responseData.meta.code).json(responseData);
+    } catch (error) {
+        console.log(error);
+        responseData = {
+            meta: {
+                code: 200,
+                success: false,
+                message: 'something went wrong!.',
+            },
+        };
+
+        return res.status(responseData.meta.code).json(responseData);
+    }
+}
+
+
 module.exports={
     register,
     login,
     verifyMember,
-    customerDetails
+    customerDetails,
+    editProfileDetails
 }
