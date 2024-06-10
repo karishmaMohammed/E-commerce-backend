@@ -172,34 +172,6 @@ async function verifyMember(req, res) {
     }
 }
 
-async function customerDetails(req, res){
-    let responseData;
-    try {
-        const { fullName, email } = req.body;
-        const userDetails = await customerModel.create(req.body);
-        console.log(userDetails);
-        responseData = {
-            meta: {
-                code: 200,
-                success: true,
-                message: 'successfully.',
-            },
-        };
-
-        return res.status(responseData.meta.code).json(responseData);
-    } catch (error) {
-        console.error(error);
-        responseData = {
-            meta: {
-                code: 200,
-                success: false,
-                message: 'Something went wrong!',
-            },
-        };
-
-        return res.status(responseData.meta.code).json(responseData);
-    }
-}
 
 async function editProfileDetails(req, res){
     let responseData;
@@ -248,11 +220,63 @@ async function editProfileDetails(req, res){
     }
 }
 
+async function changePassword(req, res) {
+    let responseData;
+    try {
+        const { oldPassword, newPassword, confirmNewPassword } = req.body;
+        const previousPassword = req.member.password;
+        const isPasswordMatch = await bcrypt.compare(oldPassword, previousPassword);
+        if (!isPasswordMatch) {
+            responseData = {
+                meta: {
+                    code: 200,
+                    success: false,
+                    message: 'Old password is incorrect',
+                },
+            };
+            return res.status(responseData.meta.code).json(responseData);
+        }
+        if (newPassword !== confirmNewPassword) {
+            responseData = {
+                meta: {
+                    code: 200,
+                    success: false,
+                    message: 'New password and confirm password do not match',
+                },
+            };
+            return res.status(responseData.meta.code).json(responseData);
+        }
+        const hashPassword = await bcrypt.hash(newPassword, 10);
+        await memberModel.findByIdAndUpdate(
+            req.member._id,
+            { password: hashPassword },
+            { new: true },
+        );
+        responseData = {
+            meta: {
+                code: 200,
+                success: true,
+                message: 'Password changed successfully',
+            },
+        };
+        return res.status(responseData.meta.code).json(responseData);
+    } catch (error) {
+        console.log(error);
+        responseData = {
+            meta: {
+                code: 200,
+                success: false,
+                message: 'Something went wrong',
+            },
+        };
+        return res.status(responseData.meta.code).json(responseData);
+    }
+}
 
 module.exports={
     register,
     login,
     verifyMember,
-    customerDetails,
-    editProfileDetails
+    editProfileDetails,
+    changePassword
 }
