@@ -9,6 +9,8 @@ const customerSchema = new mongoose.Schema({
     phoneNumber:{ type: String},
     idToken: { type: String},
     is_verified: { type: Boolean },
+    orderHistory: [{ type: mongoose.Schema.Types.ObjectId, ref: 'order_details' }],
+    wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: 'product_details' }]
     // is_admin: { type: Boolean, index: true },
     // onBoardingStatus:{ type: String},
 }, {

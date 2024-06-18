@@ -273,10 +273,11 @@ async function changePassword(req, res) {
     }
 }
 
+
 module.exports={
     register,
     login,
     verifyMember,
     editProfileDetails,
-    changePassword
+    changePassword,
 }
