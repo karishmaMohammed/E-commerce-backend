@@ -93,7 +93,7 @@ async function login(req, res){
             return res.status(responseData.meta.code).json(responseData);
         }
 
-        const isPasswordValid = bcrypt.compare(password, user.password);
+        const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
             responseData = {
                 meta: {
